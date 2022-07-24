@@ -49,7 +49,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
     protected int mMaxWidth;
     protected float mScale = 0;
     protected int mPreviewFormat = RGBA;
-    protected int mCameraIndex = CAMERA_ID_ANY;
+    protected int mCameraIndex = CAMERA_ID_FRONT;
     protected boolean mEnabled;
     protected FpsMeter mFpsMeter = null;
 
@@ -71,7 +71,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         super(context, attrs);
 
         int count = attrs.getAttributeCount();
-        Log.d(TAG, "Attr count: " + Integer.valueOf(count));
+        Log.d(TAG, "Attr count: " + count);
 
         TypedArray styledAttrs = getContext().obtainStyledAttributes(attrs, R.styleable.CameraBridgeViewBase);
         if (styledAttrs.getBoolean(R.styleable.CameraBridgeViewBase_show_fps, false))

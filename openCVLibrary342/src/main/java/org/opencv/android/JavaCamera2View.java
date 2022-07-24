@@ -42,7 +42,7 @@ public class JavaCamera2View extends CameraBridgeViewBase {
     private static final String LOGTAG = "JavaCamera2View";
 
     private ImageReader mImageReader;
-    private int mPreviewFormat = ImageFormat.YUV_420_888;
+    private final int mPreviewFormat = ImageFormat.YUV_420_888;
 
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;

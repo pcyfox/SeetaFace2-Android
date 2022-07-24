@@ -75,13 +75,16 @@ public class FaceRecognizerActivity extends AppCompatActivity {
                 return mRgba;
             }
 
-//            threadPool.submit(() -> {
-//            });
-
-            //在这里调用处理每一张frame的native方法 记得在方法中传入的是long型的
             isRecognizing = true;
             mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
             isRecognizing = false;
+
+//            threadPool.submit(() -> {
+//                //在这里调用处理每一张frame的native方法 记得在方法中传入的是long型的
+//                isRecognizing = true;
+//                mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
+//                isRecognizing = false;
+//            });
 
             return mRgba;
         }
@@ -99,7 +102,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        cameraBridgeViewBase = (CameraBridgeViewBase) findViewById(R.id.CameraView);
+        cameraBridgeViewBase = findViewById(R.id.CameraView);
         cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
         cameraBridgeViewBase.setCvCameraViewListener(mCvCameraViewListener2);
 

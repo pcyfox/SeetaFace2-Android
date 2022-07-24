@@ -128,25 +128,9 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIE
 }
 
 
-extern "C"
-JNIEXPORT jint JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
-                                                                           jobject instance,
-                                                                           jlong addr) {
-    if (NULL == FE) {
-        LOGW("FE is NULL");
-        return EXIT_FAILURE;
-    }
+int handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame, seeta::cv::ImageData image) {
 
-    cv::Mat &frame = *(cv::Mat *) addr;
-    cv::Mat rgb_img;
-    cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR);
-    seeta::cv::ImageData image = rgb_img;
-
-    // Detect all faces
-    std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
-
-    for (SeetaFaceInfo &face: faces) {
+    for (SeetaFaceInfo &face: *faces) {
         // Query top 1
         int64_t index = -1;
         float similarity = 0;
@@ -155,6 +139,7 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEn
 
         cv::rectangle(frame, cv::Rect(face.pos.x, face.pos.y, face.pos.width, face.pos.height),
                       CV_RGB(128, 128, 255), 1);
+
         for (int i = 0; i < 5; ++i) {
             auto &point = points[i];
             cv::circle(frame, cv::Point((int) point.x, (int) point.y), 2, CV_RGB(128, 255, 128),
@@ -175,6 +160,32 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEn
             return EXIT_SUCCESS;
         }
     }
+
+    return 0;
+
+}
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
+                                                                           jobject instance,
+                                                                           jlong addr) {
+    if (NULL == FE) {
+        LOGW("FE is NULL");
+        return EXIT_FAILURE;
+    }
+
+    cv::Mat &frame = *(cv::Mat *) addr;
+    cv::Mat rgb_img;
+    cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR);
+    seeta::cv::ImageData image = rgb_img;
+
+    // Detect all faces
+    std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
+
+
+    handleFaces(&faces,frame,image);
 
     return EXIT_FAILURE;
 }

@@ -35,7 +35,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
     private static final int MAGIC_TEXTURE_ID = 10;
     private static final String TAG = "JavaCameraView";
 
-    private byte mBuffer[];
+    private byte[] mBuffer;
     private Mat[] mFrameChain;
     private int mChainIdx = 0;
     private Thread mThread;
@@ -43,7 +43,6 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
     protected Camera mCamera;
     protected JavaCameraFrame[] mCameraFrame;
-    private SurfaceTexture mSurfaceTexture;
     private int mPreviewFormat = ImageFormat.NV21;
 
     public static class JavaCameraSizeAccessor implements ListItemAccessor {
@@ -126,7 +125,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     } else if (localCameraIndex == CAMERA_ID_FRONT) {
                         Log.e(TAG, "Front camera not found!");
                     } else {
-                        Log.d(TAG, "Trying to open camera with new open(" + Integer.valueOf(localCameraIndex) + ")");
+                        Log.d(TAG, "Trying to open camera with new open(" + localCameraIndex + ")");
                         try {
                             mCamera = Camera.open(localCameraIndex);
                         } catch (RuntimeException e) {
@@ -217,7 +216,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     mCameraFrame[1] = new JavaCameraFrame(mFrameChain[1], mFrameWidth, mFrameHeight);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
+                        SurfaceTexture mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
                         mCamera.setPreviewTexture(mSurfaceTexture);
                     } else
                        mCamera.setPreviewDisplay(null);
@@ -318,8 +317,8 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        if (BuildConfig.DEBUG)
-            Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
+//        if (BuildConfig.DEBUG)
+//            Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         synchronized (this) {
             mFrameChain[mChainIdx].put(0, 0, frame);
             mCameraFrameReady = true;

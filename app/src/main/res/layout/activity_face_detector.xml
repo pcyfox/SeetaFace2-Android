@@ -12,7 +12,8 @@
 
     <org.opencv.android.JavaCameraView
         android:id="@+id/CameraView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        app:camera_id="front"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:visibility="visible" />
 </androidx.constraintlayout.widget.ConstraintLayout>
