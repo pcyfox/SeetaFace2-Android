@@ -128,21 +128,25 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIE
 }
 
 
-int handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame, seeta::cv::ImageData image) {
+int
+handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame, const seeta::cv::ImageData &image) {
 
     for (SeetaFaceInfo &face: *faces) {
+        if (nullptr == FE) {
+            return EXIT_FAILURE;
+        }
         // Query top 1
         int64_t index = -1;
         float similarity = 0;
-
         auto points = FE->DetectPoints(image, face);
+
 
         cv::rectangle(frame, cv::Rect(face.pos.x, face.pos.y, face.pos.width, face.pos.height),
                       CV_RGB(128, 128, 255), 1);
 
         for (int i = 0; i < 5; ++i) {
             auto &point = points[i];
-            cv::circle(frame, cv::Point((int) point.x, (int) point.y), 2, CV_RGB(128, 255, 128),
+            cv::circle(frame, cv::Point((int) point.x, ˚(int) point.y), 2, CV_RGB(128, 255, 128),
                        -1);
         }
 
@@ -183,10 +187,7 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEn
 
     // Detect all faces
     std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
-
-
-    handleFaces(&faces,frame,image);
-
+    handleFaces(&faces, frame, image);
     return EXIT_FAILURE;
 }
 
