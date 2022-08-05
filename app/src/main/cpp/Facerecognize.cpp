@@ -14,6 +14,7 @@
 #include <iostream>
 #include <android/looper.h>
 #include <unistd.h>
+#include <MainLooper.h>
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG , "Seeta", __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN , "Seeta", __VA_ARGS__)
@@ -23,41 +24,6 @@ static std::map<int64_t, std::string> GalleryIndexMap;
 // recognization threshold
 static float threshold = 0.7f;
 
-ALooper *mainThreadLooper;
-// 用以监听事件
-int readPipe = -1;
-int writePipe = -1;
-
-
-// 当管道有写入时的回调
-int callback(int fd, int events, void *data) {
-    char msg;
-    read(fd, &msg, 1);
-
-    // 返回1表示持续接收事件
-    return 1;
-}
-
-int initLooper() {
-    // 初始化操作
-    mainThreadLooper = ALooper_forThread();
-    if (mainThreadLooper != NULL) {
-        ALooper_acquire(mainThreadLooper);
-        int messagePipe[2];
-        int result = pipe(messagePipe);
-        if (result == -1) {
-            return EXIT_FAILURE;
-        }
-        readPipe = messagePipe[0];
-        writePipe = messagePipe[1];
-        LOGD("readPipe %d - writePipe %d", readPipe, writePipe);
-        // 添加监听
-        ALooper_addFd(mainThreadLooper, readPipe,
-                      0, ALOOPER_EVENT_INPUT, callback, NULL);
-    }
-
-    return EXIT_SUCCESS;
-}
 
 
 extern "C"
@@ -90,6 +56,8 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_initNativeEngine(JNIEnv
     env->ReleaseStringUTFChars(detectModelFile_, detectModelFile);
     env->ReleaseStringUTFChars(markerModelFile_, markerModelFile);
     env->ReleaseStringUTFChars(recognizeModelFile_, recognizeModelFile);
+
+    MainLooper::GetInstance()->init();
     return (jint) res;
 }
 
@@ -146,7 +114,7 @@ handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame, const seeta::cv::
 
         for (int i = 0; i < 5; ++i) {
             auto &point = points[i];
-            cv::circle(frame, cv::Point((int) point.x, ˚(int) point.y), 2, CV_RGB(128, 255, 128),
+            cv::circle(frame, cv::Point((int) point.x, (int) point.y), 2, CV_RGB(128, 255, 128),
                        -1);
         }
 

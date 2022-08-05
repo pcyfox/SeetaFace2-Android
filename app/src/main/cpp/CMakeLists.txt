@@ -52,9 +52,9 @@ add_library( # Sets the name of the library.
 
         # Sets the library as a shared library.
         SHARED
-
+        MainLooper.cpp
         # Provides a relative path to your source file(s).
-        facedetect.cpp)
+        Facedetect.cpp)
 
 target_link_libraries( # Specifies the target library.
         facedetect android
@@ -74,7 +74,7 @@ add_library( # Sets the name of the library.
         SHARED
 
         # Provides a relative path to your source file(s).
-        facerecognize.cpp)
+        Facerecognize.cpp)
 
 
 target_link_libraries( # Specifies the target library.
