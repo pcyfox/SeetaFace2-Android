@@ -166,6 +166,8 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_releaseNativeEngine(JNI
     if (NULL != FE) {
         delete FE;
     }
+
+    MainLooper::GetInstance()->init()
     int ret = EXIT_SUCCESS;
     return (jint) ret;
 }
