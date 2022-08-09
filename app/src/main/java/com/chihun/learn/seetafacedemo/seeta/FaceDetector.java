@@ -59,9 +59,9 @@ public class FaceDetector {
      * @return 识别结果
      */
     public void detect(long rgbaddr) {
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         applyFaceDetection(rgbaddr);
-        Log.d(TAG, "spend time: " + (System.currentTimeMillis() - start));
+        //Log.d(TAG, "spend time: " + (System.currentTimeMillis() - start));
     }
 
     //该函数主要用来完成载入外部模型文件时，获取文件的路径加文件名

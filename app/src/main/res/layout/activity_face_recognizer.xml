@@ -13,4 +13,15 @@
         android:layout_height="match_parent"
         android:visibility="visible"
         app:camera_id="front" />
+
+    <com.chihun.learn.seetafacedemo.seeta.DrawerView
+        android:id="@+id/drawer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#403F51B5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

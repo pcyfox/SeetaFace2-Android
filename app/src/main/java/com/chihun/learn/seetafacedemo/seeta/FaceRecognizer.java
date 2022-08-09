@@ -16,7 +16,9 @@ import java.util.List;
 import com.chihun.learn.seetafacedemo.MyApp;
 
 public class FaceRecognizer implements ResultCallback {
+
     private static final String TAG = FaceRecognizer.class.getSimpleName();
+    private ResultCallback resultCallback;
 
     private static final String BASE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "seeta";
 
@@ -30,19 +32,26 @@ public class FaceRecognizer implements ResultCallback {
 
     @Override
     public void onFaceRect(int x, int y, int w, int h) {
-        Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
-
+        //Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
+        if (resultCallback != null) {
+            resultCallback.onFaceRect(x, y, w, h);
+        }
     }
 
     @Override
     public void onPoints(int num, int[] points) {
-        Log.d(TAG, "onPoints() called with: num = [" + num + "], points = [" + points.length + "]");
+//        Log.d(TAG, "onPoints() called with: num = [" + num + "], points = [" + points.length + "]");
+        if (resultCallback != null) {
+            resultCallback.onPoints(num, points);
+        }
     }
 
     @Override
     public void onRecognize(float similarity, String file) {
-        Log.d(TAG, "onRecognize() called with: similarity = [" + similarity + "], file = [" + file + "]");
-
+        //Log.d(TAG, "onRecognize() called with: similarity = [" + similarity + "], file = [" + file + "]");
+        if (resultCallback != null) {
+            resultCallback.onRecognize(similarity, file);
+        }
     }
 
 
@@ -54,8 +63,8 @@ public class FaceRecognizer implements ResultCallback {
         return InstanceHolder.INSTANCE;
     }
 
-    public void initLooperForNative() {
-        initCallback();
+    public void setResultCallback(ResultCallback resultCallback) {
+        this.resultCallback = resultCallback;
     }
 
     /**
@@ -75,6 +84,7 @@ public class FaceRecognizer implements ResultCallback {
             Log.w(TAG, "recognizeModelFile file path is invalid!");
             return;
         }
+        initCallback();
         initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile);
     }
 
@@ -101,7 +111,6 @@ public class FaceRecognizer implements ResultCallback {
     public void recognize(long rgbaddr) {
         long start = System.currentTimeMillis();
         nativeRecognition(rgbaddr);
-        Log.d(TAG, "spend time: " + (System.currentTimeMillis() - start));
     }
 
     //该函数主要用来完成载入外部模型文件时，获取文件的路径加文件名

@@ -4,20 +4,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.chihun.learn.seetafacedemo.seeta.DrawerView;
 import com.chihun.learn.seetafacedemo.seeta.FaceRecognizer;
+import com.chihun.learn.seetafacedemo.seeta.ResultCallback;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class FaceRecognizerActivity extends AppCompatActivity {
 
@@ -29,13 +30,13 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     private FaceRecognizer mFaceRecognizer;
     private volatile boolean isLoadedEngine = false;
     private volatile boolean isRecognizing = false;
-
-
     private ExecutorService threadPool;
+    private DrawerView drawerView;
 
 
     private void loadEngine() {
-        mFaceRecognizer.initLooperForNative();
+        mFaceRecognizer = FaceRecognizer.getInstance();
+        mFaceRecognizer.setResultCallback(drawerView);
         threadPool.submit(
                 () -> {
                     //在这里调用所有需要提前初始化的native方法
@@ -52,9 +53,16 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
         @Override
         public void onCameraViewStarted(int width, int height) {
-            Log.d(TAG, "onCameraViewStarted()");
+            Log.d(TAG, "onCameraViewStarted() called with: width = [" + width + "], height = [" + height + "]");
             mRgba = new Mat(height, width, CvType.CV_8UC4);
             mGray = new Mat(height, width, CvType.CV_8UC1);
+
+            drawerView.post(() -> {
+                ViewGroup.LayoutParams lp = drawerView.getLayoutParams();
+                lp.width = cameraBridgeViewBase.getPreviewWidth();
+                lp.height = cameraBridgeViewBase.getPreViewHeight();
+                drawerView.setLayoutParams(lp);
+            });
         }
 
         @Override
@@ -97,12 +105,12 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_face_recognizer);
         threadPool = Executors.newCachedThreadPool();
-        mFaceRecognizer = FaceRecognizer.getInstance();
         initView();
         loadEngine();
     }
 
     private void initView() {
+        drawerView = findViewById(R.id.drawer);
         cameraBridgeViewBase = findViewById(R.id.CameraView);
         cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
         cameraBridgeViewBase.setCvCameraViewListener(mCvCameraViewListener2);
@@ -110,12 +118,9 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         //在这里设置图像的大小，在手机中图像需要横屏状态，图片太大的话会卡顿
         cameraBridgeViewBase.setMaxFrameSize(640, 480);
 
-        cameraBridgeViewBase.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                finish();
-                return false;
-            }
+        cameraBridgeViewBase.setOnLongClickListener(v -> {
+            finish();
+            return false;
         });
     }
 
