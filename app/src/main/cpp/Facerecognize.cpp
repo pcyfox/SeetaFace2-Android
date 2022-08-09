@@ -40,6 +40,14 @@ static JavaVM *vm;
 int
 handleFaces(JNIEnv *env, std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
             const seeta::cv::ImageData &image) {
+
+    vm->AttachCurrentThread(&env, nullptr);
+
+    if (faces->empty()) {
+        env->CallNonvirtualVoidMethod(cb->thiz, cb->clazz, cb->onFaceRectMID, 0, 0, 0, 0);
+        return EXIT_FAILURE;
+    }
+
     for (SeetaFaceInfo &face: *faces) {
         if (nullptr == FE) {
             return EXIT_FAILURE;
@@ -48,9 +56,6 @@ handleFaces(JNIEnv *env, std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
         int64_t index = -1;
         float similarity = 0;
         auto points = FE->DetectPoints(image, face);
-
-        vm->AttachCurrentThread(&env, nullptr);
-
 
         env->CallNonvirtualVoidMethod(cb->thiz, cb->clazz, cb->onFaceRectMID, face.pos.x,
                                       face.pos.y,
@@ -187,9 +192,6 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEn
     seeta::cv::ImageData image = rgb_img;
 // Detect all faces
     std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
-    if (faces.empty()) {
-        return EXIT_FAILURE;
-    }
     handleFaces(env, &faces, frame, image);
     return EXIT_FAILURE;
 }

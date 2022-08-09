@@ -58,6 +58,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
             mGray = new Mat(height, width, CvType.CV_8UC1);
 
             drawerView.post(() -> {
+                drawerView.setScale(cameraBridgeViewBase.getScale());
                 ViewGroup.LayoutParams lp = drawerView.getLayoutParams();
                 lp.width = cameraBridgeViewBase.getPreviewWidth();
                 lp.height = cameraBridgeViewBase.getPreViewHeight();

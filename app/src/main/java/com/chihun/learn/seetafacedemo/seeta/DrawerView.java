@@ -50,14 +50,19 @@ public class DrawerView extends View implements ResultCallback {
         rectPaint.setStrokeWidth(2);
     }
 
+    private float scale = 1f;
+
+    public void setScale(float scale) {
+        this.scale = scale;
+    }
 
     private int resize(int src) {
-        return (int) (src * 2.13334f);
+        return (int) (src * scale);
     }
 
     @Override
     public void onFaceRect(int x, int y, int w, int h) {
-        Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
+        //Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
         post(() -> {
             Rect rect = new Rect(resize(x), resize(y), resize(x + w), resize(y + h));
             rectQueue.add(rect);
@@ -78,7 +83,7 @@ public class DrawerView extends View implements ResultCallback {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw() called with: canvas = [" + canvas + "]");
+        //Log.d(TAG, "onDraw() called with: canvas = [" + canvas + "]");
         this.canvas = canvas;
         Rect rect = rectQueue.poll();
         if (rect != null) {

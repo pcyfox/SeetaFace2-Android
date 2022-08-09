@@ -60,6 +60,7 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         maxHeight = MAX_UNSPECIFIED;
     }
 
+
     public CameraBridgeViewBase(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -308,6 +309,10 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         return (int) (maxWidth * mScale);
     }
 
+    public float getScale() {
+        return mScale;
+    }
+
     public void SetCaptureFormat(int format) {
         mPreviewFormat = format;
         if (mListener instanceof CvCameraViewListenerAdapter) {
@@ -494,7 +499,6 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
         public int getHeight(Object obj);
     }
 
-    ;
 
     /**
      * This helper method can be called by subclasses to select camera preview size.
