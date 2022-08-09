@@ -10,6 +10,7 @@ namespace seeta
     {
         // using namespace ::cv;
         class ImageData : public SeetaImageData {
+
         public:
             ImageData( const ::cv::Mat &mat )
                 : cv_mat( mat.clone() ) {

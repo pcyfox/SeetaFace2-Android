@@ -35,6 +35,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
 
     private void loadEngine() {
+        mFaceRecognizer.initLooperForNative();
         threadPool.submit(
                 () -> {
                     //在这里调用所有需要提前初始化的native方法

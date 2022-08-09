@@ -2,11 +2,9 @@
 # documentation: https://d.android.com/studio/projects/add-native-code.html
 
 # Sets the minimum version of CMake required to build the native library.
-
-
 cmake_minimum_required(VERSION 3.10.2)
-
 set(CMAKE_VERBOSE_MAKEFILE on)
+
 set(libs "${CMAKE_SOURCE_DIR}/jniLibs")
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/include/seeta)
@@ -53,6 +51,7 @@ add_library( # Sets the name of the library.
         # Sets the library as a shared library.
         SHARED
         MainLooper.cpp
+        Test.cpp
         # Provides a relative path to your source file(s).
         Facedetect.cpp)
 
@@ -69,10 +68,10 @@ target_link_libraries( # Specifies the target library.
 
 add_library( # Sets the name of the library.
         facerecognize
-
         # Sets the library as a shared library.
         SHARED
-
+        Test.cpp
+        MainLooper.cpp
         # Provides a relative path to your source file(s).
         Facerecognize.cpp)
 

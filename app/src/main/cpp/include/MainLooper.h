@@ -5,7 +5,6 @@
 #ifndef SEETAFACE2_MAINLOOPER_H
 #define SEETAFACE2_MAINLOOPER_H
 
-
 #include <android/looper.h>
 #include <string>
 
@@ -21,21 +20,22 @@ public:
 
     void send(const char *msg, void *data);
 
+    static void setCallback(void (*callBack)(char *, void *));
+
 
 private:
-    static void *data;
     static MainLooper *g_MainLooper;
-    static void (*callBack)(char *, void *);
 
-    ALooper *mainLooper = nullptr;
+    ALooper *looper = nullptr;
+
     int readPipe = -1;
     int writePipe = -1;
     pthread_mutex_t looper_mutex_;
 
-
     MainLooper();
 
-    static int handle_message(int fd, int events, void *data);
+    static int handleMessage(int fd, int events, void *data);
+
 };
 
 #endif //SEETAFACE2_MAINLOOPER_H

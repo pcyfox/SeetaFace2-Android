@@ -14,7 +14,7 @@ import com.chihun.learn.seetafacedemo.MyApp;
 public class FaceDetector {
 
     private static final String TAG = FaceDetector.class.getSimpleName();
-    private Context mContext;
+    private final Context mContext;
 
     static {
         System.loadLibrary("facedetect");

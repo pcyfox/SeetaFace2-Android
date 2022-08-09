@@ -1,20 +1,16 @@
-//
-// Created by 潘城尧 on 2022/8/5.
-//
-
-#include "include/MainLooper.h"
-#include <fcntl.h>
-#include "include/MainLooper.h"
-#include <stdint.h>
-#include "string.h"
-#include <stdlib.h>
 #include <unistd.h>
-#include <__threading_support>
-#include <AndroidLog.h>
+#include <thread>
+
+#include "include/AndroidLog.h"
+#include "include/MainLooper.h"
 
 #define LOOPER_MSG_LENGTH 12
 
-MainLooper *MainLooper::g_MainLooper = NULL;
+MainLooper *MainLooper::g_MainLooper = nullptr;
+
+static void *data = nullptr;
+
+static void (*callBack)(char *, void *);
 
 MainLooper *MainLooper::GetInstance() {
     if (!g_MainLooper) {
@@ -24,12 +20,12 @@ MainLooper *MainLooper::GetInstance() {
 }
 
 MainLooper::MainLooper() {
-    pthread_mutex_init(&looper_mutex_, NULL);
+    pthread_mutex_init(&looper_mutex_, nullptr);
 }
 
 MainLooper::~MainLooper() {
-    if (mainLooper && readPipe != -1) {
-        ALooper_removeFd(mainLooper, readPipe);
+    if (looper && readPipe != -1) {
+        ALooper_removeFd(looper, readPipe);
     }
     if (readPipe != -1) {
         close(readPipe);
@@ -41,33 +37,37 @@ MainLooper::~MainLooper() {
 }
 
 void MainLooper::init() {
-    int msgpipe[2];
-    pipe(msgpipe);
-    readPipe = msgpipe[0];
-    writePipe = msgpipe[1];
-    mainLooper = ALooper_prepare(0);
-    int ret = ALooper_addFd(mainLooper, readPipe, 1, ALOOPER_EVENT_INPUT,
-                            MainLooper::handle_message, data);
+    int msgPipe[2];
+    pipe(msgPipe);
+    readPipe = msgPipe[0];
+    writePipe = msgPipe[1];
+    looper = ALooper_prepare(0);
+    int ret = ALooper_addFd(looper,
+                            readPipe,
+                            119,
+                            ALOOPER_EVENT_INPUT,
+                            handleMessage,
+                            data);
     if (ret < 0) {
         LOGE("add fd error!");
     }
 }
 
 
-int MainLooper::handle_message(int fd, int events, void *data) {
-    LOGD("handle_message() called fd=%d,events=%d\n", fd, events);
-    char buffer[LOOPER_MSG_LENGTH];
-    memset(buffer, 0, LOOPER_MSG_LENGTH);
-    read(fd, buffer, sizeof(buffer));
+int MainLooper::handleMessage(int fd, int events, void *userData) {
+    LOGD("handleMessage() called fd=%d,events=%d\n", fd, events);
     if (callBack) {
+        char buffer[LOOPER_MSG_LENGTH];
+        memset(buffer, 0, LOOPER_MSG_LENGTH);
+        read(fd, buffer, sizeof(buffer));
         callBack(buffer, data);
     }
     return 1;
 }
 
-void MainLooper::send(const char *msg, void *data) {
+void MainLooper::send(const char *msg, void *sendDta) {
     pthread_mutex_lock(&looper_mutex_);
-    MainLooper::data = data;
+    data = sendDta;
     LOGD("send msg %s", msg);
     write(writePipe, msg, strlen(msg));
     pthread_mutex_unlock(&looper_mutex_);
@@ -75,10 +75,10 @@ void MainLooper::send(const char *msg, void *data) {
 
 
 void MainLooper::release() {
-    if (mainLooper && readPipe != -1) {
-        ALooper_removeFd(mainLooper, readPipe);
-        ALooper_release(mainLooper);
-        mainLooper = nullptr;
+    if (looper && readPipe != -1) {
+        ALooper_removeFd(looper, readPipe);
+        ALooper_release(looper);
+        looper = nullptr;
     }
     if (readPipe != -1) {
         close(readPipe);
@@ -88,4 +88,8 @@ void MainLooper::release() {
         close(writePipe);
         readPipe = -1;
     }
+}
+
+void MainLooper::setCallback(void (*cb)(char *, void *)) {
+    callBack = cb;
 }

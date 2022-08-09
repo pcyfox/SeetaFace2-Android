@@ -1,7 +1,7 @@
 #ifndef H_LOG
 #define H_LOG
 
-#define TAG "udp-player"
+#define TAG ""
 
 #include <android/log.h>
 

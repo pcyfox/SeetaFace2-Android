@@ -15,7 +15,7 @@ import java.util.List;
 
 import com.chihun.learn.seetafacedemo.MyApp;
 
-public class FaceRecognizer {
+public class FaceRecognizer implements ResultCallback {
     private static final String TAG = FaceRecognizer.class.getSimpleName();
 
     private static final String BASE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "seeta";
@@ -27,11 +27,35 @@ public class FaceRecognizer {
     private FaceRecognizer() {
 
     }
-    private static class InstanceHolder{
+
+    @Override
+    public void onFaceRect(int x, int y, int w, int h) {
+        Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
+
+    }
+
+    @Override
+    public void onPoints(int num, int[] points) {
+        Log.d(TAG, "onPoints() called with: num = [" + num + "], points = [" + points.length + "]");
+    }
+
+    @Override
+    public void onRecognize(float similarity, String file) {
+        Log.d(TAG, "onRecognize() called with: similarity = [" + similarity + "], file = [" + file + "]");
+
+    }
+
+
+    private static class InstanceHolder {
         private final static FaceRecognizer INSTANCE = new FaceRecognizer();
     }
-    public static FaceRecognizer getInstance(){
+
+    public static FaceRecognizer getInstance() {
         return InstanceHolder.INSTANCE;
+    }
+
+    public void initLooperForNative() {
+        initCallback();
     }
 
     /**
@@ -70,6 +94,7 @@ public class FaceRecognizer {
 
     /**
      * 检测图片
+     *
      * @param rgbaddr 图片数据内存地址
      * @return 识别结果
      */
@@ -175,7 +200,12 @@ public class FaceRecognizer {
 
     //人脸检测的三个native函数
     private native int initNativeEngine(String detectModelFile, String markerModelFile, String recognizeModelFile);
+
     private native int nativeRegisterFace(List<String> facePaths);
+
     private native int nativeRecognition(long addr);
+
     private native int releaseNativeEngine();
+
+    private native int initCallback();
 }
