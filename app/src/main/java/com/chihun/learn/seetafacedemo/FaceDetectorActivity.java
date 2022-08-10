@@ -3,12 +3,11 @@ package com.chihun.learn.seetafacedemo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.chihun.learn.seetafacedemo.seeta.FaceDetector;
+import com.pcyfox.libseeta.seeta.FaceDetector;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.CvType;
@@ -32,7 +31,7 @@ public class FaceDetectorActivity extends AppCompatActivity {
             mRgba = new Mat(height, width, CvType.CV_8UC4);
             mGray = new Mat(height, width, CvType.CV_8UC1);
             //在这里调用所有需要提前初始化的native方法
-            mFaceDetect.loadEngine();
+            mFaceDetect.loadEngine(FaceDetectorActivity.this);
         }
 
         @Override

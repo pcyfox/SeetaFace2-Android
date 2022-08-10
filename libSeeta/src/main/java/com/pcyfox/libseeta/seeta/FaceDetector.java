@@ -1,32 +1,33 @@
-package com.chihun.learn.seetafacedemo.seeta;
+package com.pcyfox.libseeta.seeta;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
+
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import com.chihun.learn.seetafacedemo.MyApp;
-
 public class FaceDetector {
 
     private static final String TAG = FaceDetector.class.getSimpleName();
-    private final Context mContext;
 
     static {
         System.loadLibrary("facedetect");
     }
 
     private FaceDetector() {
-        mContext = MyApp.getInstance();
     }
-    private static class InstanceHolder{
+
+    private static class InstanceHolder {
+        @SuppressLint("StaticFieldLeak")
         private final static FaceDetector INSTANCE = new FaceDetector();
     }
-    public static FaceDetector getInstance(){
+
+    public static FaceDetector getInstance() {
         return InstanceHolder.INSTANCE;
     }
 
@@ -45,16 +46,19 @@ public class FaceDetector {
         initFaceDetection(detectModelFile, markerModelFile);
     }
 
-    public void loadEngine() {
-        if (null == mContext) {
+    public void loadEngine(Context context) {
+
+        if (null == context) {
             Log.w(TAG, "please call initial first!");
             return;
         }
+        Context mContext = context.getApplicationContext();
         loadEngine(getPath("fd_2_00.dat", mContext), getPath("pd_2_00_pts81.dat", mContext));
     }
 
     /**
      * 检测图片
+     *
      * @param rgbaddr 图片数据内存地址
      * @return 识别结果
      */
@@ -93,6 +97,8 @@ public class FaceDetector {
 
     //人脸检测的三个native函数
     private native int initFaceDetection(String detectModelFile, String markerModelFile);
+
     private native void applyFaceDetection(long addr);
+
     private native int releaseFaceDetection();
 }

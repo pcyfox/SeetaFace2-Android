@@ -14,7 +14,7 @@
         android:visibility="visible"
         app:camera_id="front" />
 
-    <com.chihun.learn.seetafacedemo.seeta.DrawerView
+    <com.pcyfox.libseeta.seeta.DrawerView
         android:id="@+id/drawer"
         android:layout_width="0dp"
         android:layout_height="0dp"

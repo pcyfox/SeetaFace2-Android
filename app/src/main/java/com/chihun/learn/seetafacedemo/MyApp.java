@@ -7,6 +7,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
+
 public class MyApp extends Application {
 
     private static final String TAG = MyApp.class.getSimpleName();

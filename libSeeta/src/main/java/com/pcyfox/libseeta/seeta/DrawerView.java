@@ -1,4 +1,4 @@
-package com.chihun.learn.seetafacedemo.seeta;
+package com.pcyfox.libseeta.seeta;
 
 import android.content.Context;
 import android.graphics.Canvas;

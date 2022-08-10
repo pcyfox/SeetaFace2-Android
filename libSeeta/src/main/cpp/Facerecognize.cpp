@@ -17,6 +17,7 @@
 #include <cstdio>
 
 #include  "MainLooper.h"
+#include <jni.h>
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG , "Seeta", __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN , "Seeta", __VA_ARGS__)
@@ -35,13 +36,21 @@ struct CallbackObject {
 
 static Callback cb;
 static JavaVM *vm;
-
+static volatile int isRecognizing = 0;
 
 int
-handleFaces(JNIEnv *env, std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
+handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
             const seeta::cv::ImageData &image) {
 
-    vm->AttachCurrentThread(&env, nullptr);
+    if (nullptr == FE) {
+        return EXIT_FAILURE;
+    }
+    JNIEnv *env = nullptr;
+    bool detached = vm->GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED;
+    if (detached) vm->AttachCurrentThread(&env, nullptr);
+    if (nullptr == env) {
+        return EXIT_FAILURE;
+    }
 
     if (faces->empty()) {
         env->CallNonvirtualVoidMethod(cb->thiz, cb->clazz, cb->onFaceRectMID, 0, 0, 0, 0);
@@ -49,20 +58,17 @@ handleFaces(JNIEnv *env, std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
     }
 
     for (SeetaFaceInfo &face: *faces) {
-        if (nullptr == FE) {
-            return EXIT_FAILURE;
-        }
         // Query top 1
         int64_t index = -1;
         float similarity = 0;
-        auto points = FE->DetectPoints(image, face);
-
         env->CallNonvirtualVoidMethod(cb->thiz, cb->clazz, cb->onFaceRectMID, face.pos.x,
                                       face.pos.y,
                                       face.pos.width, face.pos.height);
 
 //        cv::rectangle(frame, cv::Rect(face.pos.x, face.pos.y, face.pos.width, face.pos.height),
 //                      CV_RGB(128, 128, 255), 1);
+
+        auto points = FE->DetectPoints(image, face);
         int pCount = 5;
         int size = pCount * 2;
         jint pArray[size];
@@ -91,20 +97,21 @@ handleFaces(JNIEnv *env, std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
                                           (jfloat) similarity, jFileName);
         }
     }
-    //  vm->DetachCurrentThread();
+
+    if (detached) vm->DetachCurrentThread();
     return 1;
 }
 
 
 extern "C"
 JNIEXPORT int JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_initNativeEngine(JNIEnv *env,
-                                                                          jobject instance,
-                                                                          jstring detectModelFile_,
-                                                                          jstring markerModelFile_,
-                                                                          jstring recognizeModelFile_,
-                                                                          jfloat threshold,
-                                                                          jfloat similarity) {
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_initNativeEngine(JNIEnv *env,
+                                                               jobject instance,
+                                                               jstring detectModelFile_,
+                                                               jstring markerModelFile_,
+                                                               jstring recognizeModelFile_,
+                                                               jfloat threshold,
+                                                               jfloat similarity) {
     const char *detectModelFile = env->GetStringUTFChars(detectModelFile_, 0);
     const char *markerModelFile = env->GetStringUTFChars(markerModelFile_, 0);
     const char *recognizeModelFile = env->GetStringUTFChars(recognizeModelFile_, 0);
@@ -134,10 +141,10 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_initNativeEngine(JNIEnv
 
 extern "C"
 JNIEXPORT int JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIEnv
-                                                                            *env,
-                                                                            jobject instance,
-                                                                            jobject faceList) {
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRegisterFace(JNIEnv
+                                                                 *env,
+                                                                 jobject instance,
+                                                                 jobject faceList) {
 
     if (nullptr == FE) {
         LOGW("FE is NULL");
@@ -150,14 +157,12 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIE
     jint len = env->CallIntMethod(faceList, jArrayList_size);
 
     GalleryIndexMap.clear();
-
     for (int i = 0; i < len; i++) {
         auto filepath_ = (jstring) env->CallObjectMethod(faceList, jArrayList_get, i);
         const char *filepath = env->GetStringUTFChars(filepath_, 0);
-        LOGD("filepath: %s", filepath);
         seeta::cv::ImageData image = cv::imread(filepath);
         auto id = FE->Register(image);
-        LOGD("Registered id = %lld", id);
+        LOGD("filepath: %s,Registered id = %lld", filepath, id);
         if (id >= 0) {
             GalleryIndexMap.insert(std::make_pair(id, filepath));
         }
@@ -170,23 +175,25 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIE
 extern "C"
 JNIEXPORT jint
 JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
-                                                                           jobject
-                                                                           instance,
-                                                                           jlong addr
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
+                                                                jobject
+                                                                instance,
+                                                                jlong addr
 ) {
     if (nullptr == FE) {
         LOGW("FE is NULL");
         return EXIT_FAILURE;
     }
 
+    isRecognizing = 1;
     cv::Mat &frame = *(cv::Mat *) addr;
     cv::Mat rgb_img;
     cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR);
     seeta::cv::ImageData image = rgb_img;
     // Detect all faces
     std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
-    handleFaces(env, &faces, frame, image);
+    handleFaces(&faces, frame, image);
+    isRecognizing = 0;
     return EXIT_FAILURE;
 }
 
@@ -194,9 +201,9 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEn
 extern "C"
 JNIEXPORT jint
 JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_releaseNativeEngine(JNIEnv *env,
-                                                                             jobject
-                                                                             instance) {
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_releaseNativeEngine(JNIEnv *env,
+                                                                  jobject
+                                                                  instance) {
     delete FE;
     MainLooper::GetInstance()->release();
     return (jint) EXIT_SUCCESS;
@@ -206,19 +213,29 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_releaseNativeEngine(JNI
 extern "C"
 JNIEXPORT jint
 JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_initCallback(JNIEnv *env, jobject thiz) {
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_initCallback(JNIEnv *env, jobject thiz) {
     env->GetJavaVM(&vm);
+    //有些设备中中获得的jclass是局部变量,如：RK3299
     jclass c = env->GetObjectClass(thiz);
     if (cb) {
         env->DeleteGlobalRef(cb->thiz);
         free(cb);
     }
     cb = (Callback) malloc(sizeof(CallbackObject));
-    cb->clazz = c;
+
     cb->thiz = env->NewGlobalRef(thiz);
+    cb->clazz = (jclass) env->NewGlobalRef(c);
     cb->onFaceRectMID = env->GetMethodID(c, "onFaceRect", "(IIII)V");
     cb->onPointsMID = env->GetMethodID(c, "onPoints", "(I[I)V");
     cb->onRecognizeMID = env->GetMethodID(c, "onRecognize", "(FLjava/lang/String;)V");
     return 1;
 }
 
+
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_isRecognizing(JNIEnv *env, jobject thiz) {
+    return isRecognizing;
+}

@@ -22,7 +22,7 @@ static seeta::FaceLandmarker *FL;
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceDetector_initFaceDetection(JNIEnv *env, jobject instance,
+Java_com_pcyfox_libseeta_seeta_FaceDetector_initFaceDetection(JNIEnv *env, jobject instance,
                                                               jstring detectModelFile_, jstring markerModelFile_) {
     const char *detectModelFile = env->GetStringUTFChars(detectModelFile_, 0);
     const char *markerModelFile = env->GetStringUTFChars(markerModelFile_, 0);
@@ -46,7 +46,7 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceDetector_initFaceDetection(JNIEnv 
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceDetector_applyFaceDetection(JNIEnv *env, jobject instance, jlong addr) {
+Java_com_pcyfox_libseeta_seeta_FaceDetector_applyFaceDetection(JNIEnv *env, jobject instance, jlong addr) {
 
     // TODO
     cv::Mat &img = *(cv::Mat *) addr;
@@ -77,7 +77,7 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceDetector_applyFaceDetection(JNIEnv
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_chihun_learn_seetafacedemo_seeta_FaceDetector_releaseFaceDetection(JNIEnv *env, jobject instance) {
+Java_com_pcyfox_libseeta_seeta_FaceDetector_releaseFaceDetection(JNIEnv *env, jobject instance) {
     delete FD;
     delete FL;
     int ret = EXIT_SUCCESS;

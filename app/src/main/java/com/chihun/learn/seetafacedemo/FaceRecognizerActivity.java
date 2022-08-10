@@ -9,9 +9,9 @@ import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.chihun.learn.seetafacedemo.seeta.DrawerView;
-import com.chihun.learn.seetafacedemo.seeta.FaceRecognizer;
-import com.chihun.learn.seetafacedemo.seeta.ResultCallback;
+
+import com.pcyfox.libseeta.seeta.DrawerView;
+import com.pcyfox.libseeta.seeta.FaceRecognizer;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.CvType;
@@ -29,7 +29,6 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     private Mat mGray;
     private FaceRecognizer mFaceRecognizer;
     private volatile boolean isLoadedEngine = false;
-    private volatile boolean isRecognizing = false;
     private ExecutorService threadPool;
     private DrawerView drawerView;
 
@@ -40,8 +39,8 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         threadPool.submit(
                 () -> {
                     //在这里调用所有需要提前初始化的native方法
-                    mFaceRecognizer.loadEngine(0.65f, 0.75f);
-                    mFaceRecognizer.registerFace();
+                    mFaceRecognizer.loadEngine(this, 0.65f, 0.75f);
+                    mFaceRecognizer.registerFace(this);
                     isLoadedEngine = true;
                 }
         );
@@ -80,15 +79,13 @@ public class FaceRecognizerActivity extends AppCompatActivity {
             mRgba = inputFrame.rgba();
             mGray = inputFrame.gray();
 
-            if (!isLoadedEngine || isRecognizing) {
+            if (!isLoadedEngine || mFaceRecognizer.isRecognizingFace()) {
                 return mRgba;
             }
 
             threadPool.submit(() -> {
                 //在这里调用处理每一张frame的native方法 记得在方法中传入的是long型的
-                isRecognizing = true;
                 mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
-                isRecognizing = false;
             });
 
             return mRgba;

@@ -3,6 +3,7 @@ package com.chihun.learn.seetafacedemo;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.view.View;
@@ -15,14 +16,14 @@ public class MainActivity extends AppCompatActivity {
 
     public static int PERMISSION_REQ = 0x123456;
 
-    private String[] mPermission = new String[] {
+    private final String[] mPermission = new String[] {
             Manifest.permission.CAMERA,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.SYSTEM_ALERT_WINDOW
     };
 
-    private List<String> mRequestPermission = new ArrayList<String>();
+    private final List<String> mRequestPermission = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions,  int[] grantResults) {
         // 版本兼容
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return;
         }
         if (requestCode == PERMISSION_REQ) {

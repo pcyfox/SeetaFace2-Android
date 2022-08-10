@@ -1,4 +1,4 @@
-package com.chihun.learn.seetafacedemo.seeta;
+package com.pcyfox.libseeta.seeta;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -6,14 +6,13 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.chihun.learn.seetafacedemo.MyApp;
 
 public class FaceRecognizer implements ResultCallback {
 
@@ -84,22 +83,36 @@ public class FaceRecognizer implements ResultCallback {
             Log.w(TAG, "recognizeModelFile file path is invalid!");
             return;
         }
+
         initCallback();
         initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, threshold, minSimilarity);
     }
 
-    public void loadEngine(float threshold, float minSimilarity) {
-        loadEngine(getPath("fd_2_00.dat"), getPath("pd_2_00_pts5.dat"), getPath("fr_2_10.dat"), threshold, minSimilarity);
+    public void loadEngine(Context context, float threshold, float minSimilarity) {
+        loadEngine(getPath(context, "fd_2_00.dat"), getPath(context, "pd_2_00_pts5.dat"), getPath(context, "fr_2_10.dat"), threshold, minSimilarity);
     }
 
-    public void registerFace() {
-        List<String> list = FaceRecognizer.getAssetsPath("image");
+    public void registerFace(Context context) {
+        List<String> list = FaceRecognizer.getAssetsPath(context, "image");
         if (null == list || list.isEmpty()) {
             Log.w(TAG, "face list is empty!");
             return;
         }
         Log.d(TAG, "registerFace() called");
-        nativeRegisterFace(list);
+        registerFace(list);
+    }
+
+
+    public void registerFace(List<String> images) {
+        if (null == images || images.isEmpty()) {
+            Log.w(TAG, "face list is empty!");
+            return;
+        }
+        Log.d(TAG, "registerFace() called images size" + images.size());
+        int count = nativeRegisterFace(images);
+        if (count < images.size()) {
+            Log.w(TAG, "registerFace: not register all image!, register success count=" + count);
+        }
     }
 
     /**
@@ -109,17 +122,15 @@ public class FaceRecognizer implements ResultCallback {
      * @return 识别结果
      */
     public void recognize(long rgbaddr) {
-        long start = System.currentTimeMillis();
         nativeRecognition(rgbaddr);
     }
 
     //该函数主要用来完成载入外部模型文件时，获取文件的路径加文件名
-    public static String getPath(String file) {
+    public static String getPath(Context context, String file) {
         String sdcardModelPath = isSdcardAssetFileExist("model", file);
         if (null != sdcardModelPath) {
             return sdcardModelPath;
         } else {
-            Context context = MyApp.getInstance();
             AssetManager assetManager = context.getAssets();
             BufferedInputStream inputStream = null;
             try {
@@ -147,8 +158,7 @@ public class FaceRecognizer implements ResultCallback {
         }
     }
 
-    public static List<String> getAssetsPath(String dir) {
-        Context context = MyApp.getInstance();
+    public static List<String> getAssetsPath(Context context, String dir) {
         AssetManager assetManager = context.getAssets();
         List<String> list = null;
         String[] fileNames = null;
@@ -207,6 +217,10 @@ public class FaceRecognizer implements ResultCallback {
         releaseNativeEngine();
     }
 
+    public boolean isRecognizingFace() {
+        return isRecognizing() == 1;
+    }
+
     //人脸检测的三个native函数
     private native int initNativeEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity);
 
@@ -216,5 +230,9 @@ public class FaceRecognizer implements ResultCallback {
 
     private native int releaseNativeEngine();
 
+
     private native int initCallback();
+
+
+    private native int isRecognizing();
 }

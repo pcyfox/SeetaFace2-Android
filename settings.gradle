@@ -12,6 +12,9 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "SeetaFace2"
+
 include ':app'
 include ':openCVLibrary342'
+include ':libSeeta'
