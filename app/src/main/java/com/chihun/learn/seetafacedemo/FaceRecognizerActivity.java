@@ -85,10 +85,6 @@ public class FaceRecognizerActivity extends AppCompatActivity {
                 return mRgba;
             }
 
-//            isRecognizing = true;
-//            mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
-//            isRecognizing = false;
-
             threadPool.submit(() -> {
                 //在这里调用处理每一张frame的native方法 记得在方法中传入的是long型的
                 isRecognizing = true;

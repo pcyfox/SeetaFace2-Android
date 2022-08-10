@@ -23,7 +23,7 @@
 
 static seeta::FaceEngine *FE = nullptr;
 static std::map<int64_t, const char *> GalleryIndexMap;
-static float threshold = 0.5f;
+static float minSimilarty = 0.6f;
 
 struct CallbackObject {
     jclass clazz;
@@ -83,12 +83,12 @@ handleFaces(JNIEnv *env, std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
         if (queried < 1) continue;
         // similarity greater than threshold, means recognized
         LOGW("similarity: %f", similarity);
-        if (similarity > threshold) {
+        if (similarity > minSimilarty) {
             const char *name = GalleryIndexMap[index];
             LOGW(" find file name: %s", name);
-            jstring jFileNmae = env->NewStringUTF(name);
+            jstring jFileName = env->NewStringUTF(name);
             env->CallNonvirtualVoidMethod(cb->thiz, cb->clazz, cb->onRecognizeMID,
-                                          (jfloat) similarity, jFileNmae);
+                                          (jfloat) similarity, jFileName);
         }
     }
     //  vm->DetachCurrentThread();
@@ -102,14 +102,17 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_initNativeEngine(JNIEnv
                                                                           jobject instance,
                                                                           jstring detectModelFile_,
                                                                           jstring markerModelFile_,
-                                                                          jstring recognizeModelFile_) {
+                                                                          jstring recognizeModelFile_,
+                                                                          jfloat threshold,
+                                                                          jfloat similarity) {
     const char *detectModelFile = env->GetStringUTFChars(detectModelFile_, 0);
     const char *markerModelFile = env->GetStringUTFChars(markerModelFile_, 0);
     const char *recognizeModelFile = env->GetStringUTFChars(recognizeModelFile_, 0);
 
+    minSimilarty = similarity;
+
     seeta::ModelSetting::Device device = seeta::ModelSetting::AUTO;
     int id = 0;
-
     seeta::ModelSetting FD_model(detectModelFile, device, id);
     seeta::ModelSetting PD_model(markerModelFile, device, id);
     seeta::ModelSetting FR_model(recognizeModelFile, device, id);
@@ -120,15 +123,13 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_initNativeEngine(JNIEnv
     FE->FD.set(seeta::FaceDetector::PROPERTY_MIN_FACE_SIZE, 180);
     FE->FD.set(seeta::FaceDetector::PROPERTY_VIDEO_STABLE, 1);
     //set face detect threshold
-    FE->FD.set(seeta::FaceDetector::PROPERTY_THRESHOLD1, 0.60f);
+    FE->FD.set(seeta::FaceDetector::PROPERTY_THRESHOLD1, threshold);
 
     int res = EXIT_SUCCESS;
     env->ReleaseStringUTFChars(detectModelFile_, detectModelFile);
     env->ReleaseStringUTFChars(markerModelFile_, markerModelFile);
     env->ReleaseStringUTFChars(recognizeModelFile_, recognizeModelFile);
-
-    return (jint)
-            res;
+    return (jint) res;
 }
 
 extern "C"
@@ -136,10 +137,9 @@ JNIEXPORT int JNICALL
 Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIEnv
                                                                             *env,
                                                                             jobject instance,
-                                                                            jobject
-                                                                            faceList) {
+                                                                            jobject faceList) {
 
-    if (NULL == FE) {
+    if (nullptr == FE) {
         LOGW("FE is NULL");
         return EXIT_FAILURE;
     }
@@ -148,26 +148,21 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRegisterFace(JNIE
     jmethodID jArrayList_get = env->GetMethodID(jArrayList, "get", "(I)Ljava/lang/Object;");
     jmethodID jArrayList_size = env->GetMethodID(jArrayList, "size", "()I");
     jint len = env->CallIntMethod(faceList, jArrayList_size);
-    LOGD("face len: %d", len);
+
     GalleryIndexMap.clear();
 
     for (int i = 0; i < len; i++) {
         auto filepath_ = (jstring) env->CallObjectMethod(faceList, jArrayList_get, i);
         const char *filepath = env->GetStringUTFChars(filepath_, 0);
         LOGD("filepath: %s", filepath);
-
         seeta::cv::ImageData image = cv::imread(filepath);
         auto id = FE->Register(image);
         LOGD("Registered id = %lld", id);
         if (id >= 0) {
-            GalleryIndexMap.
-                    insert(std::make_pair(id, filepath)
-            );
+            GalleryIndexMap.insert(std::make_pair(id, filepath));
         }
-//env->ReleaseStringUTFChars(filepath_, filepath);
     }
-
-    return EXIT_SUCCESS;
+    return (jint) GalleryIndexMap.size();
 }
 
 
@@ -187,10 +182,9 @@ Java_com_chihun_learn_seetafacedemo_seeta_FaceRecognizer_nativeRecognition(JNIEn
 
     cv::Mat &frame = *(cv::Mat *) addr;
     cv::Mat rgb_img;
-    cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR
-    );
+    cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR);
     seeta::cv::ImageData image = rgb_img;
-// Detect all faces
+    // Detect all faces
     std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
     handleFaces(env, &faces, frame, image);
     return EXIT_FAILURE;

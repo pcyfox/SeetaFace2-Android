@@ -365,10 +365,10 @@ public class JavaCamera2View extends CameraBridgeViewBase {
             mRgba.release();
         }
 
-        private Mat mYuvFrameData;
-        private Mat mUVFrameData;
-        private Mat mRgba;
-        private int mWidth;
-        private int mHeight;
+        private final Mat mYuvFrameData;
+        private final Mat mUVFrameData;
+        private final Mat mRgba;
+        private final int mWidth;
+        private final int mHeight;
     };
 }

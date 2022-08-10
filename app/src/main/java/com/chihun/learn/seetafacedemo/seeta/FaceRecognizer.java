@@ -85,7 +85,7 @@ public class FaceRecognizer implements ResultCallback {
             return;
         }
         initCallback();
-        initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile);
+        initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, 0.6f, 0.75f);
     }
 
     public void loadEngine() {
@@ -208,7 +208,7 @@ public class FaceRecognizer implements ResultCallback {
     }
 
     //人脸检测的三个native函数
-    private native int initNativeEngine(String detectModelFile, String markerModelFile, String recognizeModelFile);
+    private native int initNativeEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity);
 
     private native int nativeRegisterFace(List<String> facePaths);
 

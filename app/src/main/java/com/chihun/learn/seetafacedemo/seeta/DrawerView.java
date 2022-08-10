@@ -6,25 +6,23 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class DrawerView extends View implements ResultCallback {
     private static final String TAG = "DrawerView";
-    private Canvas canvas;
-
     private final Paint rectPaint;
     private Paint pointPaint;
-    private Paint textPaint;
+    private final Paint textPaint;
 
 
-    private Queue<Rect> rectQueue = new LinkedList<>();
+    private final Queue<Rect> rectQueue = new LinkedList<>();
 
 
     public DrawerView(@NonNull Context context) {
@@ -48,9 +46,18 @@ public class DrawerView extends View implements ResultCallback {
         rectPaint.setStyle(Paint.Style.STROKE);
         rectPaint.setColor(Color.GREEN);
         rectPaint.setStrokeWidth(2);
+
+        textPaint = new Paint();
+        textPaint.setStyle(Paint.Style.FILL);
+        textPaint.setColor(Color.GREEN);
+        textPaint.setStrokeWidth(2);
+        textPaint.setTextSize(40);
+
     }
 
     private float scale = 1f;
+    private String detectFile;
+    private float similarity;
 
     public void setScale(float scale) {
         this.scale = scale;
@@ -62,13 +69,21 @@ public class DrawerView extends View implements ResultCallback {
 
     @Override
     public void onFaceRect(int x, int y, int w, int h) {
-        //Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
         post(() -> {
             Rect rect = new Rect(resize(x), resize(y), resize(x + w), resize(y + h));
             rectQueue.add(rect);
+            if (x + w == 0) {
+                onRecognizeFail();
+            }
             invalidate();
         });
     }
+
+    private void onRecognizeFail() {
+        detectFile = "";
+        similarity = 0;
+    }
+
 
     @Override
     public void onPoints(int num, int[] point) {
@@ -77,17 +92,21 @@ public class DrawerView extends View implements ResultCallback {
 
     @Override
     public void onRecognize(float similarity, String file) {
-
+        this.similarity = similarity;
+        File f = new File(file);
+        detectFile = f.getName();
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
         //Log.d(TAG, "onDraw() called with: canvas = [" + canvas + "]");
-        this.canvas = canvas;
         Rect rect = rectQueue.poll();
         if (rect != null) {
             canvas.drawRect(rect, rectPaint);
+            if (similarity > 0) {
+                canvas.drawText("s=" + similarity + "," + detectFile, rect.left, rect.top - 30, textPaint);
+            }
         }
         super.onDraw(canvas);
     }
