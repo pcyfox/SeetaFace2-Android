@@ -70,7 +70,7 @@ public class FaceRecognizer implements ResultCallback {
     /**
      * 初始化引擎，加载模式文件
      */
-    public void loadEngine(String detectModelFile, String markerModelFile, String recognizeModelFile) {
+    public void loadEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity) {
         Log.d(TAG, "loadEngine() called with: detectModelFile = [" + detectModelFile + "], markerModelFile = [" + markerModelFile + "], recognizeModelFile = [" + recognizeModelFile + "]");
         if (null == detectModelFile || "".equals(detectModelFile)) {
             Log.w(TAG, "detectModelFile file path is invalid!");
@@ -85,11 +85,11 @@ public class FaceRecognizer implements ResultCallback {
             return;
         }
         initCallback();
-        initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, 0.6f, 0.75f);
+        initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, threshold, minSimilarity);
     }
 
-    public void loadEngine() {
-        loadEngine(getPath("fd_2_00.dat"), getPath("pd_2_00_pts5.dat"), getPath("fr_2_10.dat"));
+    public void loadEngine(float threshold, float minSimilarity) {
+        loadEngine(getPath("fd_2_00.dat"), getPath("pd_2_00_pts5.dat"), getPath("fr_2_10.dat"), threshold, minSimilarity);
     }
 
     public void registerFace() {

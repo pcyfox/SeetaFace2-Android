@@ -20,10 +20,12 @@ public class DrawerView extends View implements ResultCallback {
     private final Paint rectPaint;
     private Paint pointPaint;
     private final Paint textPaint;
-
-
+    private RecognizeResultCallback resultCallback;
+    private float scale = 1f;
+    private String detectFile;
+    private float similarity;
+    private boolean isShowRecognizedResult = true;
     private final Queue<Rect> rectQueue = new LinkedList<>();
-
 
     public DrawerView(@NonNull Context context) {
         super(context);
@@ -50,14 +52,13 @@ public class DrawerView extends View implements ResultCallback {
         textPaint = new Paint();
         textPaint.setStyle(Paint.Style.FILL);
         textPaint.setColor(Color.GREEN);
-        textPaint.setStrokeWidth(2);
         textPaint.setTextSize(40);
 
     }
 
-    private float scale = 1f;
-    private String detectFile;
-    private float similarity;
+    public void setResultCallback(RecognizeResultCallback resultCallback) {
+        this.resultCallback = resultCallback;
+    }
 
     public void setScale(float scale) {
         this.scale = scale;
@@ -65,6 +66,10 @@ public class DrawerView extends View implements ResultCallback {
 
     private int resize(int src) {
         return (int) (src * scale);
+    }
+
+    public boolean isShowRecognizedResult() {
+        return isShowRecognizedResult;
     }
 
     @Override
@@ -95,19 +100,28 @@ public class DrawerView extends View implements ResultCallback {
         this.similarity = similarity;
         File f = new File(file);
         detectFile = f.getName();
+        if (resultCallback != null) {
+            resultCallback.onRecognized(similarity, file);
+        }
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //Log.d(TAG, "onDraw() called with: canvas = [" + canvas + "]");
-        Rect rect = rectQueue.poll();
-        if (rect != null) {
+        super.onDraw(canvas);
+        while (!rectQueue.isEmpty()) {
+            Rect rect = rectQueue.poll();
+            if (rect == null) {
+                return;
+            }
             canvas.drawRect(rect, rectPaint);
-            if (similarity > 0) {
+            if (similarity > 0 && isShowRecognizedResult) {
                 canvas.drawText("s=" + similarity + "," + detectFile, rect.left, rect.top - 30, textPaint);
             }
         }
-        super.onDraw(canvas);
+    }
+
+    public interface RecognizeResultCallback {
+        void onRecognized(float similarity, String file);
     }
 }

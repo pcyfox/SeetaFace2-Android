@@ -40,7 +40,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         threadPool.submit(
                 () -> {
                     //在这里调用所有需要提前初始化的native方法
-                    mFaceRecognizer.loadEngine();
+                    mFaceRecognizer.loadEngine(0.65f, 0.75f);
                     mFaceRecognizer.registerFace();
                     isLoadedEngine = true;
                 }
@@ -49,7 +49,6 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
 
     private final CameraBridgeViewBase.CvCameraViewListener2 mCvCameraViewListener2 = new CameraBridgeViewBase.CvCameraViewListener2() {
-
 
         @Override
         public void onCameraViewStarted(int width, int height) {
