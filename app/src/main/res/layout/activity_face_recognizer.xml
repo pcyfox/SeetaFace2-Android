@@ -8,19 +8,27 @@
     tools:context=".FaceRecognizerActivity">
 
     <org.opencv.android.JavaCameraView
-        android:id="@+id/CameraView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible"
-        app:camera_id="front" />
+        android:id="@+id/jCameraView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="40dp"
+        app:camera_id="front"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:0.8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.22" />
 
     <com.pcyfox.libseeta.seeta.DrawerView
         android:id="@+id/drawer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="#5C0099CC"
+        app:layout_constraintBottom_toBottomOf="@id/jCameraView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/jCameraView" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -61,10 +62,12 @@ public class DrawerView extends View implements ResultCallback {
     }
 
     public void setScale(float scale) {
+        Log.d(TAG, "setScale() called with: scale = [" + scale + "]");
         this.scale = scale;
     }
 
     private int resize(int src) {
+        if (scale <= 0) scale = 1;
         return (int) (src * scale);
     }
 
@@ -74,6 +77,7 @@ public class DrawerView extends View implements ResultCallback {
 
     @Override
     public void onFaceRect(int x, int y, int w, int h) {
+        Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
         post(() -> {
             Rect rect = new Rect(resize(x), resize(y), resize(x + w), resize(y + h));
             rectQueue.add(rect);

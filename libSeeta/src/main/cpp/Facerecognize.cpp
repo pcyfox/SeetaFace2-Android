@@ -42,9 +42,6 @@ int
 handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
             const seeta::cv::ImageData &image) {
 
-    if (nullptr == FE) {
-        return EXIT_FAILURE;
-    }
     JNIEnv *env = nullptr;
     bool detached = vm->GetEnv((void **) &env, JNI_VERSION_1_6) == JNI_EDETACHED;
     if (detached) vm->AttachCurrentThread(&env, nullptr);
@@ -127,7 +124,7 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_initNativeEngine(JNIEnv *env,
     FE = new seeta::FaceEngine(FD_model, PD_model, FR_model, 2, 16);
 
     //set face detector's min face size
-    FE->FD.set(seeta::FaceDetector::PROPERTY_MIN_FACE_SIZE, 180);
+    FE->FD.set(seeta::FaceDetector::PROPERTY_MIN_FACE_SIZE, 50);
     FE->FD.set(seeta::FaceDetector::PROPERTY_VIDEO_STABLE, 1);
     //set face detect threshold
     FE->FD.set(seeta::FaceDetector::PROPERTY_THRESHOLD1, threshold);
@@ -184,7 +181,6 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
         LOGW("FE is NULL");
         return EXIT_FAILURE;
     }
-
     isRecognizing = 1;
     cv::Mat &frame = *(cv::Mat *) addr;
     cv::Mat rgb_img;

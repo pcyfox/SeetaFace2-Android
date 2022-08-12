@@ -103,16 +103,17 @@ public class FaceRecognizer implements ResultCallback {
     }
 
 
-    public void registerFace(List<String> images) {
+    public int registerFace(List<String> images) {
         if (null == images || images.isEmpty()) {
             Log.w(TAG, "face list is empty!");
-            return;
+            return 0;
         }
         Log.d(TAG, "registerFace() called images size" + images.size());
         int count = nativeRegisterFace(images);
         if (count < images.size()) {
             Log.w(TAG, "registerFace: not register all image!, register success count=" + count);
         }
+        return count;
     }
 
     /**

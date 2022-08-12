@@ -167,8 +167,6 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
                 default:
                     Log.e(TAG, "Invalid frame format! Only RGBA and Gray Scale are supported!");
             }
-            ;
-
             return result;
         }
 
@@ -302,10 +300,12 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
 
 
     public int getPreViewHeight() {
+        if (mScale <= 0) return maxHeight;
         return (int) (maxHeight * mScale);
     }
 
     public int getPreviewWidth() {
+        if (mScale <= 0) return maxWidth;
         return (int) (maxWidth * mScale);
     }
 

@@ -27,6 +27,7 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     private CameraBridgeViewBase cameraBridgeViewBase;
     private Mat mRgba;
     private Mat mGray;
+
     private FaceRecognizer mFaceRecognizer;
     private volatile boolean isLoadedEngine = false;
     private ExecutorService threadPool;
@@ -56,10 +57,9 @@ public class FaceRecognizerActivity extends AppCompatActivity {
             mGray = new Mat(height, width, CvType.CV_8UC1);
 
             drawerView.post(() -> {
-                drawerView.setScale(cameraBridgeViewBase.getScale());
                 ViewGroup.LayoutParams lp = drawerView.getLayoutParams();
-                lp.width = cameraBridgeViewBase.getPreviewWidth();
-                lp.height = cameraBridgeViewBase.getPreViewHeight();
+                lp.width = width;
+                lp.height = height;
                 drawerView.setLayoutParams(lp);
             });
         }
@@ -104,12 +104,15 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
     private void initView() {
         drawerView = findViewById(R.id.drawer);
-        cameraBridgeViewBase = findViewById(R.id.CameraView);
+        cameraBridgeViewBase = findViewById(R.id.jCameraView);
+
         cameraBridgeViewBase.setVisibility(SurfaceView.VISIBLE);
         cameraBridgeViewBase.setCvCameraViewListener(mCvCameraViewListener2);
 
         //在这里设置图像的大小，在手机中图像需要横屏状态，图片太大的话会卡顿
-        cameraBridgeViewBase.setMaxFrameSize(640, 480);
+        cameraBridgeViewBase.postDelayed(() -> {
+            cameraBridgeViewBase.setMaxFrameSize(cameraBridgeViewBase.getWidth(), cameraBridgeViewBase.getHeight());
+        }, 50);
 
         cameraBridgeViewBase.setOnLongClickListener(v -> {
             finish();
@@ -126,12 +129,15 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        if (cameraBridgeViewBase != null)
-            cameraBridgeViewBase.enableView();
+        getWindow().getDecorView().postDelayed(() -> {
+            if (cameraBridgeViewBase != null)
+                cameraBridgeViewBase.enableView();
+        }, 100);
     }
 
     public void onDestroy() {
         super.onDestroy();
+
         disableCamera();
     }
 
