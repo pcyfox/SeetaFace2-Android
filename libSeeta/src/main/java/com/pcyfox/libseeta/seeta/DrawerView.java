@@ -75,6 +75,10 @@ public class DrawerView extends View implements ResultCallback {
         return isShowRecognizedResult;
     }
 
+    public void setShowRecognizedResult(boolean showRecognizedResult) {
+        isShowRecognizedResult = showRecognizedResult;
+    }
+
     @Override
     public void onFaceRect(int x, int y, int w, int h) {
         Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
