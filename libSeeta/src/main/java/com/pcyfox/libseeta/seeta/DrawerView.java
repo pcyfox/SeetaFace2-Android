@@ -12,6 +12,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.pcyfox.libseeta.BuildConfig;
+
 import java.io.File;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -25,7 +27,7 @@ public class DrawerView extends View implements ResultCallback {
     private float scale = 1f;
     private String detectFile;
     private float similarity;
-    private boolean isShowRecognizedResult = true;
+    private boolean isShowRecognizedResult = BuildConfig.DEBUG;
     private final Queue<Rect> rectQueue = new LinkedList<>();
 
     public DrawerView(@NonNull Context context) {
@@ -81,7 +83,6 @@ public class DrawerView extends View implements ResultCallback {
 
     @Override
     public void onFaceRect(int x, int y, int w, int h) {
-        Log.d(TAG, "onFaceRect() called with: x = [" + x + "], y = [" + y + "], w = [" + w + "], h = [" + h + "]");
         post(() -> {
             Rect rect = new Rect(resize(x), resize(y), resize(x + w), resize(y + h));
             rectQueue.add(rect);

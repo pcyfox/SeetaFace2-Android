@@ -24,11 +24,11 @@
         android:id="@+id/drawer"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#5C0099CC"
         app:layout_constraintBottom_toBottomOf="@id/jCameraView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/jCameraView" />
+        app:layout_constraintTop_toTopOf="@id/jCameraView"
+        tools:background="#5C0099CC" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
