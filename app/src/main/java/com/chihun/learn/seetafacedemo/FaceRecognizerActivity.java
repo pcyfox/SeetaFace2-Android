@@ -53,6 +53,9 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         @Override
         public void onCameraViewStarted(int width, int height) {
             Log.d(TAG, "onCameraViewStarted() called with: width = [" + width + "], height = [" + height + "]");
+            mFaceRecognizer.stopRecognize(false);
+            cameraBridgeViewBase.enableView();
+
             mRgba = new Mat(height, width, CvType.CV_8UC4);
             mGray = new Mat(height, width, CvType.CV_8UC1);
 
@@ -66,38 +69,40 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
         @Override
         public void onCameraViewStopped() {
-            mRgba.release();
-            mGray.release();
-
-            //在这里析构和释放所有之前初始化和分配内存的native方法
-            mFaceRecognizer.releaseEngine();
+            Log.d(TAG, "onCameraViewStopped() called");
+            mFaceRecognizer.stopRecognize(true);
         }
 
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-
             mRgba = inputFrame.rgba();
             mGray = inputFrame.gray();
-
-            if (!isLoadedEngine || mFaceRecognizer.isRecognizingFace()) {
+            if (!isLoadedEngine || mFaceRecognizer.isRecognizingFace() || !cameraBridgeViewBase.isEnabled()) {
                 return mRgba;
             }
-
             threadPool.submit(() -> {
                 //在这里调用处理每一张frame的native方法 记得在方法中传入的是long型的
-                mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
+                if (cameraBridgeViewBase.isEnabled()) {
+                    mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
+                }
             });
-
             return mRgba;
         }
     };
+
+    private void release() {
+        if (mRgba != null) mRgba.release();
+        if (mGray != null) mGray.release();
+        //在这里析构和释放所有之前初始化和分配内存的native方法
+        if (mFaceRecognizer != null) mFaceRecognizer.releaseEngine();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_face_recognizer);
-        threadPool = Executors.newCachedThreadPool();
+        threadPool = Executors.newSingleThreadExecutor();
         initView();
         loadEngine();
     }
@@ -137,8 +142,8 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
     public void onDestroy() {
         super.onDestroy();
-
         disableCamera();
+        release();
     }
 
     public void disableCamera() {

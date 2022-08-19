@@ -29,6 +29,7 @@ public class DrawerView extends View implements ResultCallback {
     private float similarity;
     private boolean isShowRecognizedResult = BuildConfig.DEBUG;
     private final Queue<Rect> rectQueue = new LinkedList<>();
+    private int visibility;
 
     public DrawerView(@NonNull Context context) {
         super(context);
@@ -82,7 +83,16 @@ public class DrawerView extends View implements ResultCallback {
     }
 
     @Override
+    protected void onWindowVisibilityChanged(int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        this.visibility = visibility;
+        Log.d(TAG, "onWindowVisibilityChanged() called with: visibility = [" + visibility + "]");
+    }
+
+
+    @Override
     public void onFaceRect(int x, int y, int w, int h) {
+        if (visibility != View.VISIBLE) return;
         post(() -> {
             Rect rect = new Rect(resize(x), resize(y), resize(x + w), resize(y + h));
             rectQueue.add(rect);
@@ -101,11 +111,13 @@ public class DrawerView extends View implements ResultCallback {
 
     @Override
     public void onPoints(int num, int[] point) {
+        if (visibility != View.VISIBLE) return;
 
     }
 
     @Override
     public void onRecognize(float similarity, String file) {
+        if (visibility != View.VISIBLE) return;
         this.similarity = similarity;
         File f = new File(file);
         detectFile = f.getName();

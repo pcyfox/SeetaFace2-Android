@@ -36,7 +36,9 @@ struct CallbackObject {
 
 static Callback cb;
 static JavaVM *vm;
-static volatile int isRecognizing = 0;
+
+static volatile jboolean isRecognizing = JNI_FALSE;
+static volatile jboolean isStop = JNI_FALSE;
 
 int
 handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
@@ -65,6 +67,9 @@ handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
 //        cv::rectangle(frame, cv::Rect(face.pos.x, face.pos.y, face.pos.width, face.pos.height),
 //                      CV_RGB(128, 128, 255), 1);
 
+        if (isStop) {
+            return EXIT_FAILURE;
+        }
         auto points = FE->DetectPoints(image, face);
         int pCount = 5;
         int size = pCount * 2;
@@ -181,6 +186,10 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
         LOGW("FE is NULL");
         return EXIT_FAILURE;
     }
+    if (isRecognizing || isStop) {
+        return EXIT_FAILURE;
+    }
+
     isRecognizing = 1;
     cv::Mat &frame = *(cv::Mat *) addr;
     cv::Mat rgb_img;
@@ -234,4 +243,12 @@ extern "C"
 JNIEXPORT jint JNICALL
 Java_com_pcyfox_libseeta_seeta_FaceRecognizer_isRecognizing(JNIEnv *env, jobject thiz) {
     return isRecognizing;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeStopRecognize(JNIEnv *env, jobject thiz,
+                                                                  jboolean stop) {
+    isStop = stop;
+    return 0;
 }

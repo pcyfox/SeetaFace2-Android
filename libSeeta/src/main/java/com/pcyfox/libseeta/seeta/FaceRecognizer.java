@@ -126,6 +126,11 @@ public class FaceRecognizer implements ResultCallback {
         nativeRecognition(rgbaddr);
     }
 
+
+    public void stopRecognize(boolean isStop) {
+        nativeStopRecognize(isStop);
+    }
+
     //该函数主要用来完成载入外部模型文件时，获取文件的路径加文件名
     public static String getPath(Context context, String file) {
         String sdcardModelPath = isSdcardAssetFileExist("model", file);
@@ -228,6 +233,8 @@ public class FaceRecognizer implements ResultCallback {
     private native int nativeRegisterFace(List<String> facePaths);
 
     private native int nativeRecognition(long addr);
+
+    private native int nativeStopRecognize(boolean isStop);
 
     private native int releaseNativeEngine();
 
