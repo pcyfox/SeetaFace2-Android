@@ -129,16 +129,16 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_initNativeEngine(JNIEnv *env,
     FE = new seeta::FaceEngine(FD_model, PD_model, FR_model, 2, 16);
 
     //set face detector's min face size
-    FE->FD.set(seeta::FaceDetector::PROPERTY_MIN_FACE_SIZE, 50);
+    FE->FD.set(seeta::FaceDetector::PROPERTY_MIN_FACE_SIZE, 100);
     FE->FD.set(seeta::FaceDetector::PROPERTY_VIDEO_STABLE, 1);
     //set face detect threshold
     FE->FD.set(seeta::FaceDetector::PROPERTY_THRESHOLD1, threshold);
 
-    int res = EXIT_SUCCESS;
     env->ReleaseStringUTFChars(detectModelFile_, detectModelFile);
     env->ReleaseStringUTFChars(markerModelFile_, markerModelFile);
     env->ReleaseStringUTFChars(recognizeModelFile_, recognizeModelFile);
-    return (jint) res;
+
+    return EXIT_SUCCESS;
 }
 
 extern "C"

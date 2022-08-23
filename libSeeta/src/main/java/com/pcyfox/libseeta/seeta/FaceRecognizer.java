@@ -69,23 +69,24 @@ public class FaceRecognizer implements ResultCallback {
     /**
      * 初始化引擎，加载模式文件
      */
-    public void loadEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity) {
+    public boolean loadEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity) {
         Log.d(TAG, "loadEngine() called with: detectModelFile = [" + detectModelFile + "], markerModelFile = [" + markerModelFile + "], recognizeModelFile = [" + recognizeModelFile + "]");
         if (null == detectModelFile || "".equals(detectModelFile)) {
             Log.w(TAG, "detectModelFile file path is invalid!");
-            return;
+            return false;
         }
         if (null == markerModelFile || "".equals(markerModelFile)) {
             Log.w(TAG, "markerModelFile file path is invalid!");
-            return;
+            return false;
         }
         if (null == recognizeModelFile || "".equals(recognizeModelFile)) {
             Log.w(TAG, "recognizeModelFile file path is invalid!");
-            return;
+            return false;
         }
 
         initCallback();
-        initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, threshold, minSimilarity);
+        int ret = initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, threshold, minSimilarity);
+        return ret == 0;
     }
 
     public void loadEngine(Context context, float threshold, float minSimilarity) {
