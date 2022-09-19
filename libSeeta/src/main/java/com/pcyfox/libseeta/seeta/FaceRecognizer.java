@@ -20,7 +20,7 @@ public class FaceRecognizer implements ResultCallback {
     private ResultCallback resultCallback;
     private static final String BASE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "seeta";
 
-    private static volatile boolean isLoaded;
+    private volatile boolean isLoaded;
     private final static FaceRecognizer INSTANCE = new FaceRecognizer();
 
 
@@ -32,7 +32,7 @@ public class FaceRecognizer implements ResultCallback {
 
     }
 
-    public static boolean isIsLoaded() {
+    public boolean isIsLoaded() {
         return isLoaded;
     }
 
