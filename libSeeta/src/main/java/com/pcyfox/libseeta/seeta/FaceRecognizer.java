@@ -18,11 +18,10 @@ public class FaceRecognizer implements ResultCallback {
 
     private static final String TAG = FaceRecognizer.class.getSimpleName();
     private ResultCallback resultCallback;
-    private final static FaceRecognizer INSTANCE = new FaceRecognizer();
     private static final String BASE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "seeta";
 
-
-    private volatile boolean isLoaded;
+    private static volatile boolean isLoaded;
+    private final static FaceRecognizer INSTANCE = new FaceRecognizer();
 
 
     static {
@@ -31,6 +30,10 @@ public class FaceRecognizer implements ResultCallback {
 
     private FaceRecognizer() {
 
+    }
+
+    public static boolean isIsLoaded() {
+        return isLoaded;
     }
 
     @Override

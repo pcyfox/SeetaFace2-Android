@@ -270,7 +270,7 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeClearFace(JNIEnv *env, jobje
     if (FE == nullptr) {
         return (jint) EXIT_FAILURE;
     }
-    if (id < 0) {
+    if (id > 0) {
         return FE->Delete(id);
     }
     FE->Clear();
