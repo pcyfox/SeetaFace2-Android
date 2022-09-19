@@ -51,7 +51,6 @@ add_library( # Sets the name of the library.
         # Sets the library as a shared library.
         SHARED
         MainLooper.cpp
-        Test.cpp
         # Provides a relative path to your source file(s).
         Facedetect.cpp)
 
@@ -70,7 +69,6 @@ add_library( # Sets the name of the library.
         facerecognize
         # Sets the library as a shared library.
         SHARED
-        Test.cpp
         MainLooper.cpp
         # Provides a relative path to your source file(s).
         Facerecognize.cpp)

@@ -18,8 +18,12 @@ public class FaceRecognizer implements ResultCallback {
 
     private static final String TAG = FaceRecognizer.class.getSimpleName();
     private ResultCallback resultCallback;
-
+    private final static FaceRecognizer INSTANCE = new FaceRecognizer();
     private static final String BASE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "seeta";
+
+
+    private volatile boolean isLoaded;
+
 
     static {
         System.loadLibrary("facerecognize");
@@ -54,12 +58,8 @@ public class FaceRecognizer implements ResultCallback {
     }
 
 
-    private static class InstanceHolder {
-        private final static FaceRecognizer INSTANCE = new FaceRecognizer();
-    }
-
     public static FaceRecognizer getInstance() {
-        return InstanceHolder.INSTANCE;
+        return INSTANCE;
     }
 
     public void setResultCallback(ResultCallback resultCallback) {
@@ -70,6 +70,10 @@ public class FaceRecognizer implements ResultCallback {
      * 初始化引擎，加载模式文件
      */
     public boolean loadEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity) {
+        if (isLoaded) {
+            Log.w(TAG, "loadEngine: fail, isLoaded=" + isLoaded);
+            return false;
+        }
         Log.d(TAG, "loadEngine() called with: detectModelFile = [" + detectModelFile + "], markerModelFile = [" + markerModelFile + "], recognizeModelFile = [" + recognizeModelFile + "]");
         if (null == detectModelFile || "".equals(detectModelFile)) {
             Log.w(TAG, "detectModelFile file path is invalid!");
@@ -86,7 +90,8 @@ public class FaceRecognizer implements ResultCallback {
 
         initCallback();
         int ret = initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, threshold, minSimilarity);
-        return ret == 0;
+        isLoaded = ret == 0;
+        return isLoaded;
     }
 
     public void loadEngine(Context context, float threshold, float minSimilarity) {
@@ -109,7 +114,7 @@ public class FaceRecognizer implements ResultCallback {
             Log.w(TAG, "face list is empty!");
             return 0;
         }
-        Log.d(TAG, "registerFace() called images size" + images.size());
+        Log.d(TAG, "registerFace() called images size:" + images.size());
         int count = nativeRegisterFace(images);
         if (count < images.size()) {
             Log.w(TAG, "registerFace: not register all image!, register success count=" + count);
@@ -222,6 +227,11 @@ public class FaceRecognizer implements ResultCallback {
      */
     public void releaseEngine() {
         releaseNativeEngine();
+        isLoaded = false;
+    }
+
+    public int clearFace(int id) {
+        return nativeClearFace(id);
     }
 
     public boolean isRecognizingFace() {
@@ -232,6 +242,8 @@ public class FaceRecognizer implements ResultCallback {
     private native int initNativeEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity);
 
     private native int nativeRegisterFace(List<String> facePaths);
+
+    private native int nativeClearFace(int id);
 
     private native int nativeRecognition(long addr);
 

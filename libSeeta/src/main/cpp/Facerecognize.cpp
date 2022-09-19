@@ -67,7 +67,8 @@ handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
 //        cv::rectangle(frame, cv::Rect(face.pos.x, face.pos.y, face.pos.width, face.pos.height),
 //                      CV_RGB(128, 128, 255), 1);
 
-        if (isStop) {
+        if (isStop || FE == nullptr) {
+            LOGD("isStop || FE == nullptr");
             return EXIT_FAILURE;
         }
         auto points = FE->DetectPoints(image, face);
@@ -174,6 +175,9 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRegisterFace(JNIEnv
 
 
 
+
+
+
 extern "C"
 JNIEXPORT jint
 JNICALL
@@ -196,6 +200,7 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
     cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR);
     seeta::cv::ImageData image = rgb_img;
     // Detect all faces
+    LOGD("-------DetectFaces--------");
     std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
     handleFaces(&faces, frame, image);
     isRecognizing = 0;
@@ -209,8 +214,15 @@ JNICALL
 Java_com_pcyfox_libseeta_seeta_FaceRecognizer_releaseNativeEngine(JNIEnv *env,
                                                                   jobject
                                                                   instance) {
+    if (isRecognizing) {
+        LOGW("------release fail-------");
+        return EXIT_FAILURE;
+    }
+    isStop = JNI_TRUE;
     delete FE;
+    FE = nullptr;
     MainLooper::GetInstance()->release();
+    LOGW("------release over-------");
     return (jint) EXIT_SUCCESS;
 }
 
@@ -251,4 +263,16 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeStopRecognize(JNIEnv *env, j
                                                                   jboolean stop) {
     isStop = stop;
     return 0;
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeClearFace(JNIEnv *env, jobject thiz, jint id) {
+    if (FE == nullptr) {
+        return (jint) EXIT_FAILURE;
+    }
+    if (id < 0) {
+        return FE->Delete(id);
+    }
+    FE->Clear();
+    return (jint) EXIT_SUCCESS;
 }
