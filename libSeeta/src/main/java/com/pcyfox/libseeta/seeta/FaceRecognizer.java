@@ -7,6 +7,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import androidx.annotation.Keep;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -14,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Keep
 public class FaceRecognizer implements ResultCallback {
 
     private static final String TAG = FaceRecognizer.class.getSimpleName();

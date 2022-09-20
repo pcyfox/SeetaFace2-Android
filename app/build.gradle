@@ -5,7 +5,6 @@ plugins {
 
 android {
     compileSdk 32
-
     defaultConfig {
         applicationId "com.pcyfox.seetaface2"
         minSdk 23
@@ -28,9 +27,29 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file('/Users/sptlt/Projects/AndroidProjects/SeetaFace2-Android/app/appKey')
+            storePassword '12345678'
+            keyAlias 'DDG'
+            keyPassword '12345678'
+        }
+        release {
+            storeFile file('/Users/sptlt/Projects/AndroidProjects/SeetaFace2-Android/app/appKey')
+            storePassword '12345678'
+            keyAlias 'DDG'
+            keyPassword '12345678'
+        }
+    }
     buildTypes {
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -56,8 +75,10 @@ android {
 //            jniLibs.srcDirs = ['src/main/cpp/jniLibs']
 //        }
 //    }
-}
 
+
+
+}
 
 
 dependencies {

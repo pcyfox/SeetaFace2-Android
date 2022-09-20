@@ -21,6 +21,7 @@
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG , "Seeta", __VA_ARGS__)
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN , "Seeta", __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO , "Seeta", __VA_ARGS__)
 
 static seeta::FaceEngine *FE = nullptr;
 static std::map<int64_t, const char *> GalleryIndexMap;
@@ -68,7 +69,7 @@ handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
 //                      CV_RGB(128, 128, 255), 1);
 
         if (isStop || FE == nullptr) {
-            LOGD("isStop || FE == nullptr");
+            LOGW("handle face fail,isStop || FE == nullptr");
             return EXIT_FAILURE;
         }
         auto points = FE->DetectPoints(image, face);
@@ -91,10 +92,10 @@ handleFaces(std::vector<SeetaFaceInfo> *faces, cv::Mat &frame,
         // no face queried from database
         if (queried < 1) continue;
         // similarity greater than threshold, means recognized
-        LOGW("similarity: %f", similarity);
+        LOGI("similarity: %f", similarity);
         if (similarity > minSimilarty) {
             const char *name = GalleryIndexMap[index];
-            LOGW(" find file name: %s", name);
+            LOGI(" find file name: %s", name);
             jstring jFileName = env->NewStringUTF(name);
             env->CallNonvirtualVoidMethod(cb->thiz, cb->clazz, cb->onRecognizeMID,
                                           (jfloat) similarity, jFileName);
@@ -138,7 +139,7 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_initNativeEngine(JNIEnv *env,
     env->ReleaseStringUTFChars(detectModelFile_, detectModelFile);
     env->ReleaseStringUTFChars(markerModelFile_, markerModelFile);
     env->ReleaseStringUTFChars(recognizeModelFile_, recognizeModelFile);
-
+    LOGW("load engine over!");
     return EXIT_SUCCESS;
 }
 
@@ -150,7 +151,7 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRegisterFace(JNIEnv
                                                                  jobject faceList) {
 
     if (nullptr == FE) {
-        LOGW("FE is NULL");
+        LOGW("register face fail ,FE is NULL");
         return EXIT_FAILURE;
     }
 
@@ -165,7 +166,7 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRegisterFace(JNIEnv
         const char *filepath = env->GetStringUTFChars(filepath_, 0);
         seeta::cv::ImageData image = cv::imread(filepath);
         auto id = FE->Register(image);
-        LOGD("filepath: %s,Registered id = %lld", filepath, id);
+        LOGI("register filepath:%s,Registered id= %lld", filepath, id);
         if (id >= 0) {
             GalleryIndexMap.insert(std::make_pair(id, filepath));
         }
@@ -216,15 +217,19 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_releaseNativeEngine(JNIEnv *env,
                                                                   jobject
                                                                   instance) {
     if (isRecognizing) {
-        LOGW("------release fail-------");
+        LOGW("------release fail,isRecognizing-------");
         return EXIT_FAILURE;
     }
+
     isStop = JNI_TRUE;
     free(cb), cb = nullptr;
     GalleryIndexMap.clear();
-    delete FE, FE = nullptr;
     MainLooper::GetInstance()->release();
-    LOGW("------release over-------");
+    if (FE) {
+        FE->Clear();
+        delete FE, FE = nullptr;
+        LOGW("------release over-------");
+    }
     return (jint) EXIT_SUCCESS;
 }
 
