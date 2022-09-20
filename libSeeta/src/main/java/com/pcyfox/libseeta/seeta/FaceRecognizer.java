@@ -32,7 +32,7 @@ public class FaceRecognizer implements ResultCallback {
 
     }
 
-    public boolean isIsLoaded() {
+    public boolean isLoaded() {
         return isLoaded;
     }
 
@@ -74,7 +74,7 @@ public class FaceRecognizer implements ResultCallback {
      */
     public boolean loadEngine(String detectModelFile, String markerModelFile, String recognizeModelFile, float threshold, float minSimilarity) {
         if (isLoaded) {
-            Log.w(TAG, "loadEngine: fail, isLoaded=" + isLoaded);
+            Log.w(TAG, "loadEngine: fail,  engine is loaded!");
             return false;
         }
         Log.d(TAG, "loadEngine() called with: detectModelFile = [" + detectModelFile + "], markerModelFile = [" + markerModelFile + "], recognizeModelFile = [" + recognizeModelFile + "]");
@@ -90,15 +90,14 @@ public class FaceRecognizer implements ResultCallback {
             Log.w(TAG, "recognizeModelFile file path is invalid!");
             return false;
         }
-
         initCallback();
         int ret = initNativeEngine(detectModelFile, markerModelFile, recognizeModelFile, threshold, minSimilarity);
         isLoaded = ret == 0;
         return isLoaded;
     }
 
-    public void loadEngine(Context context, float threshold, float minSimilarity) {
-        loadEngine(getPath(context, "fd_2_00.dat"), getPath(context, "pd_2_00_pts5.dat"), getPath(context, "fr_2_10.dat"), threshold, minSimilarity);
+    public boolean loadEngine(Context context, float threshold, float minSimilarity) {
+        return loadEngine(getPath(context, "fd_2_00.dat"), getPath(context, "pd_2_00_pts5.dat"), getPath(context, "fr_2_10.dat"), threshold, minSimilarity);
     }
 
     public void registerFace(Context context) {
@@ -113,6 +112,11 @@ public class FaceRecognizer implements ResultCallback {
 
 
     public int registerFace(List<String> images) {
+        if (!isLoaded) {
+            Log.e(TAG, "registerFace() called fail, engine is not load");
+            return 0;
+        }
+
         if (null == images || images.isEmpty()) {
             Log.w(TAG, "face list is empty!");
             return 0;

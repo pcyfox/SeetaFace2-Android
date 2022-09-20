@@ -28,7 +28,6 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     private Mat mRgba;
 
     private FaceRecognizer mFaceRecognizer;
-    private volatile boolean isLoadedEngine = false;
     private ExecutorService threadPool;
     private DrawerView drawerView;
 
@@ -41,7 +40,6 @@ public class FaceRecognizerActivity extends AppCompatActivity {
                     //在这里调用所有需要提前初始化的native方法
                     mFaceRecognizer.loadEngine(this, 0.65f, 0.75f);
                     mFaceRecognizer.registerFace(this);
-                    isLoadedEngine = true;
                 }
         );
     }
@@ -74,14 +72,12 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         @Override
         public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
             mRgba = inputFrame.rgba();
-            if (!isLoadedEngine || mFaceRecognizer.isRecognizingFace() || !cameraBridgeViewBase.isEnabled()) {
+            if (mFaceRecognizer == null || !mFaceRecognizer.isLoaded() || mFaceRecognizer.isRecognizingFace() || !cameraBridgeViewBase.isEnabled()) {
                 return mRgba;
             }
             threadPool.submit(() -> {
                 //在这里调用处理每一张frame的native方法 记得在方法中传入的是long型的
-                if (cameraBridgeViewBase.isEnabled() && isLoadedEngine) {
-                    mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
-                }
+                mFaceRecognizer.recognize(mRgba.getNativeObjAddr());
             });
             return mRgba;
         }
@@ -89,14 +85,21 @@ public class FaceRecognizerActivity extends AppCompatActivity {
 
     private void release() {
         Log.d(TAG, "release() called");
-        isLoadedEngine = false;
         mFaceRecognizer.stopRecognize(true);
         //在这里析构和释放所有之前初始化和分配内存的native方法
-        threadPool.execute(() -> {
-            while (!mFaceRecognizer.isRecognizingFace() && mFaceRecognizer.isIsLoaded()) {
+        if (!mFaceRecognizer.isRecognizingFace()) {
+            mFaceRecognizer.releaseEngine();
+        } else {
+            threadPool.execute(() -> {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 mFaceRecognizer.releaseEngine();
-            }
-        });
+            });
+        }
+
         if (mRgba != null) mRgba.release();
     }
 
