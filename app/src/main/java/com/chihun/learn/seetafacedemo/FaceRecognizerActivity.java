@@ -92,7 +92,11 @@ public class FaceRecognizerActivity extends AppCompatActivity {
         isLoadedEngine = false;
         mFaceRecognizer.stopRecognize(true);
         //在这里析构和释放所有之前初始化和分配内存的native方法
-        if (mFaceRecognizer != null) mFaceRecognizer.releaseEngine();
+        threadPool.execute(() -> {
+            while (!mFaceRecognizer.isRecognizingFace() && mFaceRecognizer.isIsLoaded()) {
+                mFaceRecognizer.releaseEngine();
+            }
+        });
         if (mRgba != null) mRgba.release();
     }
 
@@ -114,9 +118,15 @@ public class FaceRecognizerActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
+    protected void onDestroy() {
+        super.onDestroy();
         release();
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        Log.d(TAG, "onDetachedFromWindow() called");
+        super.onDetachedFromWindow();
     }
 
     private void initView() {

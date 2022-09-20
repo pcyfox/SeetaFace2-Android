@@ -200,10 +200,11 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_nativeRecognition(JNIEnv *env,
     cv::cvtColor(frame, rgb_img, cv::COLOR_RGBA2BGR);
     seeta::cv::ImageData image = rgb_img;
     // Detect all faces
-    LOGD("-------DetectFaces--------");
+    //LOGD("-------start detect faces--------");
     std::vector<SeetaFaceInfo> faces = FE->DetectFaces(image);
     handleFaces(&faces, frame, image);
     isRecognizing = 0;
+    //LOGD("-------end detect faces--------");
     return EXIT_FAILURE;
 }
 
@@ -219,8 +220,9 @@ Java_com_pcyfox_libseeta_seeta_FaceRecognizer_releaseNativeEngine(JNIEnv *env,
         return EXIT_FAILURE;
     }
     isStop = JNI_TRUE;
-    delete FE;
-    FE = nullptr;
+    free(cb), cb = nullptr;
+    GalleryIndexMap.clear();
+    delete FE, FE = nullptr;
     MainLooper::GetInstance()->release();
     LOGW("------release over-------");
     return (jint) EXIT_SUCCESS;
