@@ -29,13 +29,13 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('/Users/sptlt/Projects/AndroidProjects/SeetaFace2-Android/app/appKey')
+            storeFile file('../appKey')
             storePassword '12345678'
             keyAlias 'DDG'
             keyPassword '12345678'
         }
         release {
-            storeFile file('/Users/sptlt/Projects/AndroidProjects/SeetaFace2-Android/app/appKey')
+            storeFile file('../appKey')
             storePassword '12345678'
             keyAlias 'DDG'
             keyPassword '12345678'
